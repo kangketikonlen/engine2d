@@ -14,6 +14,12 @@ engine2d/
   include/
   build/
 
+## Note
+- sudo dnf install -y gcc gcc-c++ make cmake
+- sudo dnf install -y SDL2 SDL2-devel
+- Extension : C/C++ and CMake Tools
+- 
+
 ## Deliverable
 - A `main.cpp` that compiles and runs
 
