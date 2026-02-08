@@ -9,16 +9,38 @@ Confirm the toolchain works.
 - Install VS Code C++ extensions
 - Create project structure:
 
+```bash
 engine2d/
-  src/
-  include/
-  build/
+├── build/
+│ └── engine2d
+├── include/
+├── src/
+│ └── main.cpp
+├── cbuild.sh
+├── crun.sh
+└── README.md
+```
 
 ## Note
-- sudo dnf install -y gcc gcc-c++ make cmake
-- sudo dnf install -y SDL2 SDL2-devel
-- Extension : C/C++ and CMake Tools
-- 
+- Install C++ toolchain:
+  - `sudo dnf install -y gcc gcc-c++ make cmake`
+
+- Install SDL2 development libraries:
+  - `sudo dnf install -y SDL2 SDL2-devel`
+
+- VS Code extensions:
+  - **C/C++** (Microsoft)
+  - **CMake Tools** (optional, for later)
+
+- Build approach:
+  - Avoid VS Code “Run / Build active file”
+  - Use explicit build and run scripts instead
+
+- Fedora (Wayland) note:
+  - SDL2 windows may be created but not visible
+  - Force X11 for development:
+    - `export SDL_VIDEODRIVER=x11`
+  - Applied in `crun.sh` to ensure window visibility
 
 ## Deliverable
 - A `main.cpp` that compiles and runs
