@@ -10,7 +10,7 @@ int main(int argc, char* argv[])
     }
 
     SDL_Window* window = SDL_CreateWindow(
-        "Engine2D - Day 2 Timing and FPS",
+        "Engine2D - Day 3",
         100, 100,
         800, 600,
         SDL_WINDOW_SHOWN
@@ -26,50 +26,49 @@ int main(int argc, char* argv[])
     bool running = true;
     SDL_Event event;
 
-    // --- Timing setup ---
+    // --- Timing ---
     const float targetFPS = 60.0f;
-    const float targetFrameTime = 1.0f / targetFPS;
+    const Uint32 targetFrameMs = static_cast<Uint32>(1000.0f / targetFPS);
 
     Uint32 lastTicks = SDL_GetTicks();
-    float fpsTimer = 0.0f;
-    int frameCount = 0;
+
+    // --- Input state ---
+    float x = 0.0f;
+    float y = 0.0f;
+    const float speed = 200.0f; // units per second
 
     while (running)
     {
         Uint32 frameStart = SDL_GetTicks();
 
-        // --- Events ---
+        // --- Events (pressed / released) ---
         while (SDL_PollEvent(&event))
         {
             if (event.type == SDL_QUIT)
                 running = false;
         }
 
-        // --- Timing ---
-        Uint32 frameEnd = SDL_GetTicks();
-        float deltaTime = (frameEnd - lastTicks) / 1000.0f;
-        lastTicks = frameEnd;
+        // --- Delta time ---
+        Uint32 currentTicks = SDL_GetTicks();
+        float deltaTime = (currentTicks - lastTicks) / 1000.0f;
+        lastTicks = currentTicks;
 
-        // --- FPS calculation ---
-        fpsTimer += deltaTime;
-        frameCount++;
+        // --- Keyboard state (held keys) ---
+        const Uint8* keys = SDL_GetKeyboardState(nullptr);
 
-        if (fpsTimer >= 1.0f)
-        {
-            float fps = frameCount / fpsTimer;
-            std::cout << "FPS: " << fps << std::endl;
+        if (keys[SDL_SCANCODE_W]) y -= speed * deltaTime;
+        if (keys[SDL_SCANCODE_S]) y += speed * deltaTime;
+        if (keys[SDL_SCANCODE_A]) x -= speed * deltaTime;
+        if (keys[SDL_SCANCODE_D]) x += speed * deltaTime;
 
-            fpsTimer = 0.0f;
-            frameCount = 0;
-        }
+        // --- Debug output ---
+        std::cout << "\rPosition: (" << x << ", " << y << ")   " << std::flush;
 
         // --- Frame limiting ---
-        Uint32 frameDuration = frameEnd - frameStart;
-        Uint32 targetFrameMs = static_cast<Uint32>(1000.0f / targetFPS);
-
-        if (frameDuration < targetFrameMs)
+        Uint32 frameTime = SDL_GetTicks() - frameStart;
+        if (frameTime < targetFrameMs)
         {
-            SDL_Delay(targetFrameMs - frameDuration);
+            SDL_Delay(targetFrameMs - frameTime);
         }
     }
 
