@@ -21,7 +21,7 @@ engine2d/
 └── README.md
 ```
 
-## Note
+## Trial, Error and Troubleshoot Note
 - Install C++ toolchain:
   - `sudo dnf install -y gcc gcc-c++ make cmake`
 
@@ -35,12 +35,6 @@ engine2d/
 - Build approach:
   - Avoid VS Code “Run / Build active file”
   - Use explicit build and run scripts instead
-
-- Fedora (Wayland) note:
-  - SDL2 windows may be created but not visible
-  - Force X11 for development:
-    - `export SDL_VIDEODRIVER=x11`
-  - Applied in `crun.sh` to ensure window visibility
 
 ## Deliverable
 - A `main.cpp` that compiles and runs
