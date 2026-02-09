@@ -14,12 +14,7 @@ engine2d
 │   └── player.png
 ├── build
 │   └── engine2d
-├── cbuild.sh
-├── crun.sh
 ├── docs
-│   ├── curriculum.md
-│   ├── decisions.md
-│   ├── devlog.md
 │   ├── notes
 │   │   └── summary-day0-14.md
 │   ├── tasks
@@ -45,11 +40,16 @@ engine2d
 │   │   ├── day-19-animation.md
 │   │   ├── day-20-game-states.md
 │   │   └── day-21-polish.md
+│   ├── curriculum.md
+│   ├── decisions.md
+│   ├── devlog.md
 │   └── troubleshooting.md
 ├── include
-├── README.md
-└── src
-    └── main.cpp
+├── src
+│   └── main.cpp
+├── cbuild.sh
+├── crun.sh
+└── README.md
 ```
 
 ## 📌 Start Here
