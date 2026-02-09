@@ -1,4 +1,5 @@
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 #include <iostream>
 
 struct Vec2
@@ -8,11 +9,6 @@ struct Vec2
 
     Vec2() : x(0.0f), y(0.0f) {}
     Vec2(float x_, float y_) : x(x_), y(y_) {}
-
-    Vec2 operator+(const Vec2& other) const
-    {
-        return Vec2(x + other.x, y + other.y);
-    }
 
     Vec2 operator*(float scalar) const
     {
@@ -29,14 +25,23 @@ struct Vec2
 
 int main(int argc, char* argv[])
 {
+    // --- SDL core ---
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
     {
         std::cerr << "SDL_Init Error: " << SDL_GetError() << std::endl;
         return 1;
     }
 
+    // --- SDL_image ---
+    if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG))
+    {
+        std::cerr << "IMG_Init Error: " << IMG_GetError() << std::endl;
+        SDL_Quit();
+        return 1;
+    }
+
     SDL_Window* window = SDL_CreateWindow(
-        "Engine2D - Day 5",
+        "Engine2D - Day 6",
         100, 100,
         800, 600,
         SDL_WINDOW_SHOWN
@@ -45,6 +50,7 @@ int main(int argc, char* argv[])
     if (!window)
     {
         std::cerr << "SDL_CreateWindow Error: " << SDL_GetError() << std::endl;
+        IMG_Quit();
         SDL_Quit();
         return 1;
     }
@@ -59,12 +65,26 @@ int main(int argc, char* argv[])
     {
         std::cerr << "SDL_CreateRenderer Error: " << SDL_GetError() << std::endl;
         SDL_DestroyWindow(window);
+        IMG_Quit();
         SDL_Quit();
         return 1;
     }
 
-    bool running = true;
-    SDL_Event event;
+    // --- Load texture ---
+    SDL_Texture* playerTexture =
+        IMG_LoadTexture(renderer, "assets/player.png");
+
+    if (!playerTexture)
+    {
+        std::cerr << "Failed to load texture: "
+                  << IMG_GetError() << std::endl;
+
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        IMG_Quit();
+        SDL_Quit();
+        return 1;
+    }
 
     // --- Timing ---
     const float targetFPS = 60.0f;
@@ -75,7 +95,14 @@ int main(int argc, char* argv[])
     Vec2 position(400.0f, 300.0f);
     Vec2 velocity(0.0f, 0.0f);
     const float speed = 200.0f;
-    const int rectSize = 50;
+
+    // Query texture size
+    int texW = 0;
+    int texH = 0;
+    SDL_QueryTexture(playerTexture, nullptr, nullptr, &texW, &texH);
+
+    bool running = true;
+    SDL_Event event;
 
     while (running)
     {
@@ -109,15 +136,14 @@ int main(int argc, char* argv[])
         SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
         SDL_RenderClear(renderer);
 
-        SDL_Rect rect{
+        SDL_Rect dst{
             static_cast<int>(position.x),
             static_cast<int>(position.y),
-            rectSize,
-            rectSize
+            texW,
+            texH
         };
 
-        SDL_SetRenderDrawColor(renderer, 220, 220, 220, 255);
-        SDL_RenderFillRect(renderer, &rect);
+        SDL_RenderCopy(renderer, playerTexture, nullptr, &dst);
         SDL_RenderPresent(renderer);
 
         // --- Frame limiting ---
@@ -128,8 +154,12 @@ int main(int argc, char* argv[])
         }
     }
 
+    // --- Cleanup ---
+    SDL_DestroyTexture(playerTexture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+    IMG_Quit();
     SDL_Quit();
+
     return 0;
 }
