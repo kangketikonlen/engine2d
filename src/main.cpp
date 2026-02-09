@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <string>
 
+// -------------------- Math --------------------
 struct Vec2
 {
     float x, y;
@@ -14,6 +15,7 @@ struct Vec2
     Vec2& operator+=(const Vec2& o) { x += o.x; y += o.y; return *this; }
 };
 
+// -------------------- Entity --------------------
 struct Entity
 {
     Vec2 position;
@@ -22,6 +24,7 @@ struct Entity
     int w, h;
 };
 
+// -------------------- Texture Manager --------------------
 struct TextureManager
 {
     SDL_Renderer* renderer;
@@ -52,17 +55,22 @@ struct TextureManager
     }
 };
 
+// -------------------- Scene Init --------------------
 void initScene(std::vector<Entity>& entities,
-               SDL_Texture* playerTex,
+               SDL_Texture* tex,
                int w, int h)
 {
     entities.clear();
 
-    entities.push_back({ Vec2(0, 0), Vec2(0, 0), playerTex, w, h });
-    entities.push_back({ Vec2(200, 100), Vec2(0, 0), playerTex, w, h });
-    entities.push_back({ Vec2(-150, -50), Vec2(0, 0), playerTex, w, h });
+    // Player
+    entities.push_back({ Vec2(0, 0), Vec2(0, 0), tex, w, h });
+
+    // Extra entities (debug / demo)
+    entities.push_back({ Vec2(200, 100), Vec2(0, 0), tex, w, h });
+    entities.push_back({ Vec2(-150, -50), Vec2(0, 0), tex, w, h });
 }
 
+// -------------------- Main --------------------
 int main(int argc, char* argv[])
 {
     SDL_Init(SDL_INIT_VIDEO);
@@ -72,7 +80,7 @@ int main(int argc, char* argv[])
     const int screenH = 600;
 
     SDL_Window* window = SDL_CreateWindow(
-        "Engine2D - Day 12 (Scene Reset)",
+        "Engine2D - Day 13 (Debug Tools)",
         100, 100, screenW, screenH,
         SDL_WINDOW_SHOWN
     );
@@ -94,29 +102,38 @@ int main(int argc, char* argv[])
 
     Vec2 cameraPos(0, 0);
     bool running = true;
+    bool debugDraw = false;   // <-- Day 13 debug toggle
     SDL_Event event;
 
     while (running)
     {
-        // --- Events ---
+        // -------- Events --------
         while (SDL_PollEvent(&event))
         {
             if (event.type == SDL_QUIT)
                 running = false;
 
-            // Reset scene on key press
+            // Scene reset (Escape)
             if (event.type == SDL_KEYDOWN &&
                 event.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
             {
                 initScene(entities, playerTex, texW, texH);
             }
+
+            // Debug toggle (F1)
+            if (event.type == SDL_KEYDOWN &&
+                event.key.keysym.scancode == SDL_SCANCODE_F1)
+            {
+                debugDraw = !debugDraw;
+            }
         }
 
+        // -------- Timing --------
         Uint32 now = SDL_GetTicks();
         float dt = (now - lastTicks) / 1000.0f;
         lastTicks = now;
 
-        // Player input
+        // -------- Input (player only) --------
         Entity& player = entities[0];
         player.velocity = Vec2(0, 0);
 
@@ -126,15 +143,19 @@ int main(int argc, char* argv[])
         if (keys[SDL_SCANCODE_A]) player.velocity.x -= speed;
         if (keys[SDL_SCANCODE_D]) player.velocity.x += speed;
 
+        // -------- Update --------
         for (Entity& e : entities)
             e.position += e.velocity * dt;
 
+        // -------- Camera --------
         cameraPos.x = player.position.x - screenW * 0.5f;
         cameraPos.y = player.position.y - screenH * 0.5f;
 
+        // -------- Rendering --------
         SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
         SDL_RenderClear(renderer);
 
+        // Draw entities
         for (const Entity& e : entities)
         {
             SDL_Rect dst{
@@ -144,6 +165,24 @@ int main(int argc, char* argv[])
             };
 
             SDL_RenderCopy(renderer, e.texture, nullptr, &dst);
+        }
+
+        // -------- Debug Rendering (Day 13) --------
+        if (debugDraw)
+        {
+            SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+
+            for (const Entity& e : entities)
+            {
+                SDL_Rect box{
+                    static_cast<int>(e.position.x - cameraPos.x),
+                    static_cast<int>(e.position.y - cameraPos.y),
+                    e.w,
+                    e.h
+                };
+
+                SDL_RenderDrawRect(renderer, &box);
+            }
         }
 
         SDL_RenderPresent(renderer);
