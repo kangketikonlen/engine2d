@@ -10,8 +10,6 @@ struct Vec2
     Vec2() : x(0), y(0) {}
     Vec2(float x_, float y_) : x(x_), y(y_) {}
 
-    Vec2 operator+(const Vec2& o) const { return Vec2(x + o.x, y + o.y); }
-    Vec2 operator-(const Vec2& o) const { return Vec2(x - o.x, y - o.y); }
     Vec2 operator*(float s) const { return Vec2(x * s, y * s); }
     Vec2& operator+=(const Vec2& o) { x += o.x; y += o.y; return *this; }
 };
@@ -35,7 +33,7 @@ int main(int argc, char* argv[])
     const int screenH = 600;
 
     SDL_Window* window = SDL_CreateWindow(
-        "Engine2D - Day 8 (Collision)",
+        "Engine2D - Day 9 (Collision Resolution)",
         100, 100, screenW, screenH,
         SDL_WINDOW_SHOWN
     );
@@ -49,20 +47,16 @@ int main(int argc, char* argv[])
     int texW = 0, texH = 0;
     SDL_QueryTexture(playerTexture, nullptr, nullptr, &texW, &texH);
 
-    // --- Timing ---
     Uint32 lastTicks = SDL_GetTicks();
     const float speed = 200.0f;
 
-    // --- World state ---
     Vec2 playerPos(0.0f, 0.0f);
     Vec2 velocity(0.0f, 0.0f);
 
-    // Static obstacle (world space)
-    SDL_Rect obstacleWorld{
-        200, 150, 100, 100
+    SDL_Rect obstacle{
+        200, 150, 120, 120
     };
 
-    // Camera
     Vec2 cameraPos(0.0f, 0.0f);
 
     bool running = true;
@@ -70,19 +64,16 @@ int main(int argc, char* argv[])
 
     while (running)
     {
-        // --- Events ---
         while (SDL_PollEvent(&event))
         {
             if (event.type == SDL_QUIT)
                 running = false;
         }
 
-        // --- Delta time ---
         Uint32 now = SDL_GetTicks();
         float dt = (now - lastTicks) / 1000.0f;
         lastTicks = now;
 
-        // --- Input ---
         velocity = Vec2(0, 0);
         const Uint8* keys = SDL_GetKeyboardState(nullptr);
 
@@ -91,52 +82,64 @@ int main(int argc, char* argv[])
         if (keys[SDL_SCANCODE_A]) velocity.x -= speed;
         if (keys[SDL_SCANCODE_D]) velocity.x += speed;
 
-        playerPos += velocity * dt;
+        // --- Move on X ---
+        playerPos.x += velocity.x * dt;
 
-        // --- Camera follows player ---
-        cameraPos.x = playerPos.x - screenW * 0.5f;
-        cameraPos.y = playerPos.y - screenH * 0.5f;
-
-        // --- Build bounding boxes (world space) ---
-        SDL_Rect playerWorld{
+        SDL_Rect playerX{
             static_cast<int>(playerPos.x),
             static_cast<int>(playerPos.y),
-            texW,
-            texH
+            texW, texH
         };
 
-        bool colliding = AABBIntersect(playerWorld, obstacleWorld);
+        if (AABBIntersect(playerX, obstacle))
+        {
+            if (velocity.x > 0)
+                playerPos.x = obstacle.x - texW;
+            else if (velocity.x < 0)
+                playerPos.x = obstacle.x + obstacle.w;
+        }
+
+        // --- Move on Y ---
+        playerPos.y += velocity.y * dt;
+
+        SDL_Rect playerY{
+            static_cast<int>(playerPos.x),
+            static_cast<int>(playerPos.y),
+            texW, texH
+        };
+
+        if (AABBIntersect(playerY, obstacle))
+        {
+            if (velocity.y > 0)
+                playerPos.y = obstacle.y - texH;
+            else if (velocity.y < 0)
+                playerPos.y = obstacle.y + obstacle.h;
+        }
+
+        // --- Camera ---
+        cameraPos.x = playerPos.x - screenW * 0.5f;
+        cameraPos.y = playerPos.y - screenH * 0.5f;
 
         // --- Rendering ---
         SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
         SDL_RenderClear(renderer);
 
-        // Convert world → screen
-        SDL_Rect playerScreen{
-            static_cast<int>(playerWorld.x - cameraPos.x),
-            static_cast<int>(playerWorld.y - cameraPos.y),
-            playerWorld.w,
-            playerWorld.h
-        };
-
         SDL_Rect obstacleScreen{
-            static_cast<int>(obstacleWorld.x - cameraPos.x),
-            static_cast<int>(obstacleWorld.y - cameraPos.y),
-            obstacleWorld.w,
-            obstacleWorld.h
+            static_cast<int>(obstacle.x - cameraPos.x),
+            static_cast<int>(obstacle.y - cameraPos.y),
+            obstacle.w, obstacle.h
         };
 
-        // Draw obstacle (red if colliding)
-        if (colliding)
-            SDL_SetRenderDrawColor(renderer, 200, 50, 50, 255);
-        else
-            SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
-
+        SDL_SetRenderDrawColor(renderer, 120, 120, 120, 255);
         SDL_RenderFillRect(renderer, &obstacleScreen);
 
-        // Draw player
-        SDL_RenderCopy(renderer, playerTexture, nullptr, &playerScreen);
+        SDL_Rect playerScreen{
+            static_cast<int>(playerPos.x - cameraPos.x),
+            static_cast<int>(playerPos.y - cameraPos.y),
+            texW, texH
+        };
 
+        SDL_RenderCopy(renderer, playerTexture, nullptr, &playerScreen);
         SDL_RenderPresent(renderer);
     }
 
