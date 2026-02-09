@@ -10,6 +10,16 @@ struct Vec2
     Vec2() : x(0.0f), y(0.0f) {}
     Vec2(float x_, float y_) : x(x_), y(y_) {}
 
+    Vec2 operator+(const Vec2& other) const
+    {
+        return Vec2(x + other.x, y + other.y);
+    }
+
+    Vec2 operator-(const Vec2& other) const
+    {
+        return Vec2(x - other.x, y - other.y);
+    }
+
     Vec2 operator*(float scalar) const
     {
         return Vec2(x * scalar, y * scalar);
@@ -25,14 +35,12 @@ struct Vec2
 
 int main(int argc, char* argv[])
 {
-    // --- SDL core ---
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
     {
         std::cerr << "SDL_Init Error: " << SDL_GetError() << std::endl;
         return 1;
     }
 
-    // --- SDL_image ---
     if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG))
     {
         std::cerr << "IMG_Init Error: " << IMG_GetError() << std::endl;
@@ -40,10 +48,13 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+    const int screenWidth = 800;
+    const int screenHeight = 600;
+
     SDL_Window* window = SDL_CreateWindow(
-        "Engine2D - Day 6",
+        "Engine2D - Day 7 (Camera)",
         100, 100,
-        800, 600,
+        screenWidth, screenHeight,
         SDL_WINDOW_SHOWN
     );
 
@@ -56,9 +67,7 @@ int main(int argc, char* argv[])
     }
 
     SDL_Renderer* renderer = SDL_CreateRenderer(
-        window,
-        -1,
-        SDL_RENDERER_ACCELERATED
+        window, -1, SDL_RENDERER_ACCELERATED
     );
 
     if (!renderer)
@@ -70,15 +79,12 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    // --- Load texture ---
     SDL_Texture* playerTexture =
         IMG_LoadTexture(renderer, "assets/player.png");
 
     if (!playerTexture)
     {
-        std::cerr << "Failed to load texture: "
-                  << IMG_GetError() << std::endl;
-
+        std::cerr << "Failed to load texture: " << IMG_GetError() << std::endl;
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
         IMG_Quit();
@@ -86,20 +92,21 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+    int texW = 0, texH = 0;
+    SDL_QueryTexture(playerTexture, nullptr, nullptr, &texW, &texH);
+
     // --- Timing ---
     const float targetFPS = 60.0f;
     const Uint32 targetFrameMs = static_cast<Uint32>(1000.0f / targetFPS);
     Uint32 lastTicks = SDL_GetTicks();
 
-    // --- State ---
-    Vec2 position(400.0f, 300.0f);
+    // --- World state ---
+    Vec2 playerPos(0.0f, 0.0f);
     Vec2 velocity(0.0f, 0.0f);
     const float speed = 200.0f;
 
-    // Query texture size
-    int texW = 0;
-    int texH = 0;
-    SDL_QueryTexture(playerTexture, nullptr, nullptr, &texW, &texH);
+    // --- Camera ---
+    Vec2 cameraPos(0.0f, 0.0f);
 
     bool running = true;
     SDL_Event event;
@@ -129,16 +136,23 @@ int main(int argc, char* argv[])
         if (keys[SDL_SCANCODE_A]) velocity.x -= speed;
         if (keys[SDL_SCANCODE_D]) velocity.x += speed;
 
-        // --- Movement ---
-        position += velocity * deltaTime;
+        // --- Update world ---
+        playerPos += velocity * deltaTime;
+
+        // --- Camera follows player (centered) ---
+        cameraPos.x = playerPos.x - screenWidth  * 0.5f;
+        cameraPos.y = playerPos.y - screenHeight * 0.5f;
 
         // --- Rendering ---
         SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
         SDL_RenderClear(renderer);
 
+        // World → Screen transform
+        Vec2 screenPos = playerPos - cameraPos;
+
         SDL_Rect dst{
-            static_cast<int>(position.x),
-            static_cast<int>(position.y),
+            static_cast<int>(screenPos.x),
+            static_cast<int>(screenPos.y),
             texW,
             texH
         };
@@ -154,12 +168,10 @@ int main(int argc, char* argv[])
         }
     }
 
-    // --- Cleanup ---
     SDL_DestroyTexture(playerTexture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     IMG_Quit();
     SDL_Quit();
-
     return 0;
 }
