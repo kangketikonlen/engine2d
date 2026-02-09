@@ -55,19 +55,37 @@ struct TextureManager
     }
 };
 
+// -------------------- Collision --------------------
+bool AABBIntersect(const SDL_Rect& a, const SDL_Rect& b)
+{
+    return (
+        a.x < b.x + b.w &&
+        a.x + a.w > b.x &&
+        a.y < b.y + b.h &&
+        a.y + a.h > b.y
+    );
+}
+
 // -------------------- Scene Init --------------------
 void initScene(std::vector<Entity>& entities,
-               SDL_Texture* tex,
+               std::vector<SDL_Rect>& walls,
+               SDL_Texture* playerTex,
                int w, int h)
 {
     entities.clear();
+    walls.clear();
 
     // Player
-    entities.push_back({ Vec2(0, 0), Vec2(0, 0), tex, w, h });
+    entities.push_back({ Vec2(0, 60), Vec2(0, 0), playerTex, w, h });
 
-    // Extra entities (debug / demo)
-    entities.push_back({ Vec2(200, 100), Vec2(0, 0), tex, w, h });
-    entities.push_back({ Vec2(-150, -50), Vec2(0, 0), tex, w, h });
+    // Simple level (walls)
+    walls.push_back({ -300, -200, 600, 40 });   // top
+    walls.push_back({ -300,  200, 600, 40 });   // bottom
+    walls.push_back({ -300, -200, 40, 440 });   // left
+    walls.push_back({  260, -200, 40, 440 });   // right
+
+    // Inner obstacle
+    walls.push_back({ -60, -60, 120, 120 });
 }
 
 // -------------------- Main --------------------
@@ -80,7 +98,7 @@ int main(int argc, char* argv[])
     const int screenH = 600;
 
     SDL_Window* window = SDL_CreateWindow(
-        "Engine2D - Day 13 (Debug Tools)",
+        "engine2d - Day 14 Mini Demo",
         100, 100, screenW, screenH,
         SDL_WINDOW_SHOWN
     );
@@ -95,14 +113,15 @@ int main(int argc, char* argv[])
     SDL_QueryTexture(playerTex, nullptr, nullptr, &texW, &texH);
 
     std::vector<Entity> entities;
-    initScene(entities, playerTex, texW, texH);
+    std::vector<SDL_Rect> walls;
+    initScene(entities, walls, playerTex, texW, texH);
 
     Uint32 lastTicks = SDL_GetTicks();
     const float speed = 200.0f;
 
     Vec2 cameraPos(0, 0);
     bool running = true;
-    bool debugDraw = false;   // <-- Day 13 debug toggle
+    bool debugDraw = false;
     SDL_Event event;
 
     while (running)
@@ -113,14 +132,12 @@ int main(int argc, char* argv[])
             if (event.type == SDL_QUIT)
                 running = false;
 
-            // Scene reset (Escape)
             if (event.type == SDL_KEYDOWN &&
                 event.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
             {
-                initScene(entities, playerTex, texW, texH);
+                initScene(entities, walls, playerTex, texW, texH);
             }
 
-            // Debug toggle (F1)
             if (event.type == SDL_KEYDOWN &&
                 event.key.keysym.scancode == SDL_SCANCODE_F1)
             {
@@ -133,7 +150,7 @@ int main(int argc, char* argv[])
         float dt = (now - lastTicks) / 1000.0f;
         lastTicks = now;
 
-        // -------- Input (player only) --------
+        // -------- Player Input --------
         Entity& player = entities[0];
         player.velocity = Vec2(0, 0);
 
@@ -143,45 +160,87 @@ int main(int argc, char* argv[])
         if (keys[SDL_SCANCODE_A]) player.velocity.x -= speed;
         if (keys[SDL_SCANCODE_D]) player.velocity.x += speed;
 
-        // -------- Update --------
-        for (Entity& e : entities)
-            e.position += e.velocity * dt;
+        // -------- Collision Resolution --------
+        // Move X
+        player.position.x += player.velocity.x * dt;
+        SDL_Rect playerBoxX{
+            (int)player.position.x,
+            (int)player.position.y,
+            player.w, player.h
+        };
+
+        for (const SDL_Rect& wall : walls)
+        {
+            if (AABBIntersect(playerBoxX, wall))
+            {
+                if (player.velocity.x > 0)
+                    player.position.x = wall.x - player.w;
+                else if (player.velocity.x < 0)
+                    player.position.x = wall.x + wall.w;
+            }
+        }
+
+        // Move Y
+        player.position.y += player.velocity.y * dt;
+        SDL_Rect playerBoxY{
+            (int)player.position.x,
+            (int)player.position.y,
+            player.w, player.h
+        };
+
+        for (const SDL_Rect& wall : walls)
+        {
+            if (AABBIntersect(playerBoxY, wall))
+            {
+                if (player.velocity.y > 0)
+                    player.position.y = wall.y - player.h;
+                else if (player.velocity.y < 0)
+                    player.position.y = wall.y + wall.h;
+            }
+        }
 
         // -------- Camera --------
         cameraPos.x = player.position.x - screenW * 0.5f;
         cameraPos.y = player.position.y - screenH * 0.5f;
 
         // -------- Rendering --------
-        SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
+        SDL_SetRenderDrawColor(renderer, 25, 25, 25, 255);
         SDL_RenderClear(renderer);
 
-        // Draw entities
-        for (const Entity& e : entities)
+        // Walls
+        SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
+        for (const SDL_Rect& wall : walls)
         {
-            SDL_Rect dst{
-                static_cast<int>(e.position.x - cameraPos.x),
-                static_cast<int>(e.position.y - cameraPos.y),
-                e.w, e.h
+            SDL_Rect screenWall{
+                wall.x - (int)cameraPos.x,
+                wall.y - (int)cameraPos.y,
+                wall.w, wall.h
             };
-
-            SDL_RenderCopy(renderer, e.texture, nullptr, &dst);
+            SDL_RenderFillRect(renderer, &screenWall);
         }
 
-        // -------- Debug Rendering (Day 13) --------
+        // Player
+        SDL_Rect playerScreen{
+            (int)(player.position.x - cameraPos.x),
+            (int)(player.position.y - cameraPos.y),
+            player.w, player.h
+        };
+        SDL_RenderCopy(renderer, player.texture, nullptr, &playerScreen);
+
+        // -------- Debug --------
         if (debugDraw)
         {
             SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+            SDL_RenderDrawRect(renderer, &playerScreen);
 
-            for (const Entity& e : entities)
+            for (const SDL_Rect& wall : walls)
             {
-                SDL_Rect box{
-                    static_cast<int>(e.position.x - cameraPos.x),
-                    static_cast<int>(e.position.y - cameraPos.y),
-                    e.w,
-                    e.h
+                SDL_Rect dbg{
+                    wall.x - (int)cameraPos.x,
+                    wall.y - (int)cameraPos.y,
+                    wall.w, wall.h
                 };
-
-                SDL_RenderDrawRect(renderer, &box);
+                SDL_RenderDrawRect(renderer, &dbg);
             }
         }
 
