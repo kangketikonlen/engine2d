@@ -47,9 +47,8 @@ engine2d
 ├── include
 ├── src
 │   └── main.cpp
-├── cbuild.sh
-├── crun.sh
-└── README.md
+├── README.md
+└── run.sh
 ```
 
 ## 📌 Start Here
