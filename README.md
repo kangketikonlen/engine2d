@@ -1,12 +1,99 @@
-# Engine2D – Learning Plan
+# engine2d
 
-This directory contains a 14-day learning plan for building a minimal 2D game
-engine from scratch using C++ and SDL2.
+A minimal 2D game engine built step by step using **C++** and **SDL2**.
 
-Rules:
-- One small goal per day
-- Code may be ugly but must be understood
-- Rewrites are expected
-- History is preserved
+This repository is structured as a **learning-driven engine project**, where
+each system is introduced intentionally and documented along the way.
 
-Start with Day 0.
+---
+
+## 📌 Start Here
+
+If you are new to this repository:
+
+1. Read the **project roadmap**  
+   → [`docs/curriculum.md`](docs/curriculum.md)
+
+2. Follow development day by day  
+   → [`docs/tasks/`](docs/tasks/)
+
+3. Review architectural intent  
+   → [`docs/decisions.md`](docs/decisions.md)
+
+---
+
+## 🗺️ Documentation Index
+
+### Roadmap & Planning
+- 📘 **Curriculum (Day 0–21)**  
+  → [`docs/curriculum.md`](docs/curriculum.md)
+
+- 🧩 **Daily Task Specs**  
+  → [`docs/tasks/`](docs/tasks/)
+  - Day 00 — Setup  
+    → [`docs/tasks/day-00-setup.md`](docs/tasks/day-00-setup.md)
+  - Day 01 — Window & Loop  
+    → [`docs/tasks/day-01-window-loop.md`](docs/tasks/day-01-window-loop.md)
+  - Day 02 — Timing  
+    → [`docs/tasks/day-02-timing.md`](docs/tasks/day-02-timing.md)
+  - Day 03 — Input  
+    → [`docs/tasks/day-03-input.md`](docs/tasks/day-03-input.md)
+  - Day 04 — Rendering  
+    → [`docs/tasks/day-04-rendering.md`](docs/tasks/day-04-rendering.md)
+  - Day 05 — Math  
+    → [`docs/tasks/day-05-math.md`](docs/tasks/day-05-math.md)
+  - Day 06 — Sprites  
+    → [`docs/tasks/day-06-sprites.md`](docs/tasks/day-06-sprites.md)
+  - Day 07 — Camera  
+    → [`docs/tasks/day-07-camera.md`](docs/tasks/day-07-camera.md)
+  - Day 08 — Collision Detection  
+    → [`docs/tasks/day-08-collision-detect.md`](docs/tasks/day-08-collision-detect.md)
+  - Day 09 — Collision Resolution  
+    → [`docs/tasks/day-09-collision-resolve.md`](docs/tasks/day-09-collision-resolve.md)
+  - Day 10 — Entities  
+    → [`docs/tasks/day-10-entities.md`](docs/tasks/day-10-entities.md)
+  - Day 11 — Assets  
+    → [`docs/tasks/day-11-assets.md`](docs/tasks/day-11-assets.md)
+  - Day 12 — Scene Reset  
+    → [`docs/tasks/day-12-scene-reset.md`](docs/tasks/day-12-scene-reset.md)
+  - Day 13 — Debug Tools  
+    → [`docs/tasks/day-13-debug.md`](docs/tasks/day-13-debug.md)
+  - Day 14 — Mini Demo  
+    → [`docs/tasks/day-14-demo.md`](docs/tasks/day-14-demo.md)
+  - Day 15 — Tile Map  
+    → [`docs/tasks/day-15-tile-map.md`](docs/tasks/day-15-tile-map.md)
+  - Day 16 — Collision Layers  
+    → [`docs/tasks/day-16-collision-layers.md`](docs/tasks/day-16-collision-layers.md)
+  - Day 17 — Triggers  
+    → [`docs/tasks/day-17-triggers.md`](docs/tasks/day-17-triggers.md)
+  - Day 18 — Player FSM  
+    → [`docs/tasks/day-18-player-fsm.md`](docs/tasks/day-18-player-fsm.md)
+  - Day 19 — Animation  
+    → [`docs/tasks/day-19-animation.md`](docs/tasks/day-19-animation.md)
+  - Day 20 — Game States  
+    → [`docs/tasks/day-20-game-states.md`](docs/tasks/day-20-game-states.md)
+  - Day 21 — Polish  
+    → [`docs/tasks/day-21-polish.md`](docs/tasks/day-21-polish.md)
+
+---
+
+### Progress & History
+- 🧾 **Development Log**  
+  → [`docs/devlog.md`](docs/devlog.md)
+
+- 🧪 **Troubleshooting & Lessons Learned**  
+  → [`docs/troubleshooting.md`](docs/troubleshooting.md)
+
+---
+
+### Architecture & Design
+- 🧠 **Architectural Decisions**  
+  → [`docs/decisions.md`](docs/decisions.md)
+
+---
+
+## 🔧 Build & Run
+
+### Dependencies (Fedora)
+```bash
+sudo dnf install -y gcc gcc-c++ make cmake SDL2 SDL2-devel SDL2_image SDL2_image-devel
