@@ -7,6 +7,51 @@ each system is introduced intentionally and documented along the way.
 
 ---
 
+## 📁 Project Structure
+```bash
+engine2d
+├── assets
+│   └── player.png
+├── build
+│   └── engine2d
+├── cbuild.sh
+├── crun.sh
+├── docs
+│   ├── curriculum.md
+│   ├── decisions.md
+│   ├── devlog.md
+│   ├── notes
+│   │   └── summary-day0-14.md
+│   ├── tasks
+│   │   ├── day-00-setup.md
+│   │   ├── day-01-window-loop.md
+│   │   ├── day-02-timing.md
+│   │   ├── day-03-input.md
+│   │   ├── day-04-rendering.md
+│   │   ├── day-05-math.md
+│   │   ├── day-06-sprites.md
+│   │   ├── day-07-camera.md
+│   │   ├── day-08-collision-detect.md
+│   │   ├── day-09-collision-resolve.md
+│   │   ├── day-10-entities.md
+│   │   ├── day-11-assets.md
+│   │   ├── day-12-scene-reset.md
+│   │   ├── day-13-debug.md
+│   │   ├── day-14-demo.md
+│   │   ├── day-15-tile-map.md
+│   │   ├── day-16-collision-layers.md
+│   │   ├── day-17-triggers.md
+│   │   ├── day-18-player-fsm.md
+│   │   ├── day-19-animation.md
+│   │   ├── day-20-game-states.md
+│   │   └── day-21-polish.md
+│   └── troubleshooting.md
+├── include
+├── README.md
+└── src
+    └── main.cpp
+```
+
 ## 📌 Start Here
 
 If you are new to this repository:
