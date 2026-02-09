@@ -145,14 +145,7 @@ sudo dnf install -y gcc gcc-c++ make cmake SDL2 SDL2-devel SDL2_image SDL2_image
 
 ---
 
-### Build
-```bash
-./cbuild.sh
-```
-
----
-
-### Run
+### Build & Run
 ```bash
 ./run.sh
 ```
@@ -176,4 +169,3 @@ sudo dnf install -y gcc gcc-c++ make cmake SDL2 SDL2-devel SDL2_image SDL2_image
 
 ### Philosophy
 Build systems that make invalid states hard to represent. Clarity and correctness matter more than cleverness.
-
