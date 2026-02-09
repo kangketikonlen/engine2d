@@ -97,3 +97,39 @@ If you are new to this repository:
 ### Dependencies (Fedora)
 ```bash
 sudo dnf install -y gcc gcc-c++ make cmake SDL2 SDL2-devel SDL2_image SDL2_image-devel
+```
+
+---
+
+### Build
+```bash
+./cbuild.sh
+```
+
+---
+
+### Run
+```bash
+./run.sh
+```
+| On Fedora (Wayland), crun.sh forces SDL_VIDEODRIVER=x11
+
+---
+
+## 🧭 How to Use This Repository
+- Use docs/tasks/ as your daily work guide
+- Use devlog.md to record progress
+- Use troubleshooting.md when something goes wrong
+- Use decisions.md when questioning design choices
+
+---
+
+### Status
+- Phase 1 (Day 0–14): ✅ Complete
+- Phase 2 (Day 15–21): 🚧 In progress
+
+---
+
+### Philosophy
+Build systems that make invalid states hard to represent. Clarity and correctness matter more than cleverness.
+
